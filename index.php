@@ -2,7 +2,7 @@
 
 <div class="hero-section text-center py-5">
     <h1 class="display-4"><i class="fas fa-backpack"></i> Benvenuto in MyBackpack</h1>
-    <p class="lead">Il tuo zaino digitale per organizzare libri, multimedia, giochi, documenti e note!</p>
+    <p class="lead">Il tuo zaino digitale per organizzare libri, multimedia, giochi, documenti, note e altro ancora!</p>
     
     <?php if(!isset($_SESSION['user_id'])): ?>
     <div class="mt-4">
