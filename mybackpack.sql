@@ -1,26 +1,19 @@
--- ============================================
--- DATABASE MYBACKPACK - VERSIONE CORRETTA
--- ============================================
-
 DROP DATABASE IF EXISTS mybackpack;
 CREATE DATABASE mybackpack CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE mybackpack;
 
--- ============================================
--- TABELLE
--- ============================================
-
+-- UTENTI con tipologia admin/user
 CREATE TABLE utenti (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
+    tipologia ENUM('admin', 'user') DEFAULT 'user',
     data_registrazione TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ultimo_accesso TIMESTAMP NULL,
-    INDEX idx_username (username),
-    INDEX idx_email (email)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    INDEX idx_username (username)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- LIBRI (senza prezzo)
 CREATE TABLE libri (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -30,15 +23,14 @@ CREATE TABLE libri (
     stato ENUM('da_leggere', 'in_lettura', 'completato') DEFAULT 'da_leggere',
     voto INT CHECK (voto >= 1 AND voto <= 5),
     preferito BOOLEAN DEFAULT FALSE,
-    prezzo DECIMAL(10,2) DEFAULT 0.00,
+    immagine VARCHAR(500),
     data_aggiunta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_modifica TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES utenti(id) ON DELETE CASCADE,
-    INDEX idx_user_id (user_id),
-    INDEX idx_stato (stato),
+    INDEX idx_user (user_id),
     INDEX idx_genere (genere)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- MULTIMEDIA
 CREATE TABLE multimedia (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -46,15 +38,13 @@ CREATE TABLE multimedia (
     tipo ENUM('video', 'audio', 'immagine', 'podcast', 'altro') DEFAULT 'altro',
     link VARCHAR(500),
     categoria VARCHAR(50),
-    descrizione TEXT,
     preferito BOOLEAN DEFAULT FALSE,
     data_aggiunta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_modifica TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES utenti(id) ON DELETE CASCADE,
-    INDEX idx_user_id (user_id),
-    INDEX idx_tipo (tipo)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    INDEX idx_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- GIOCHI
 CREATE TABLE giochi (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -64,120 +54,107 @@ CREATE TABLE giochi (
     stato ENUM('da_giocare', 'in_corso', 'completato') DEFAULT 'da_giocare',
     voto INT CHECK (voto >= 1 AND voto <= 5),
     preferito BOOLEAN DEFAULT FALSE,
+    immagine VARCHAR(500),
     data_aggiunta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_modifica TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES utenti(id) ON DELETE CASCADE,
-    INDEX idx_user_id (user_id),
-    INDEX idx_stato (stato)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    INDEX idx_user (user_id),
+    INDEX idx_genere (genere)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE documenti (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    titolo VARCHAR(200) NOT NULL,
-    tipo VARCHAR(50),
-    descrizione TEXT,
-    file_path VARCHAR(500),
-    importante BOOLEAN DEFAULT FALSE,
-    data_aggiunta TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_modifica TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES utenti(id) ON DELETE CASCADE,
-    INDEX idx_user_id (user_id),
-    INDEX idx_importante (importante)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
+-- NOTE con scadenza
 CREATE TABLE note (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     titolo VARCHAR(200),
     contenuto TEXT NOT NULL,
-    colore ENUM('yellow', 'green', 'blue', 'pink', 'orange', 'purple') DEFAULT 'yellow',
+    colore ENUM('yellow','green','blue','pink','orange','purple') DEFAULT 'yellow',
+    priorita ENUM('bassa','media','alta','urgente') DEFAULT 'media',
+    data_scadenza DATETIME,
+    completata BOOLEAN DEFAULT FALSE,
     data_creazione TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    data_modifica TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES utenti(id) ON DELETE CASCADE,
-    INDEX idx_user_id (user_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    INDEX idx_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ============================================
--- INSERIMENTO UTENTI
--- Password: "password" per entrambi
--- ============================================
+-- OBIETTIVI
+CREATE TABLE obiettivi (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    titolo VARCHAR(200) NOT NULL,
+    descrizione TEXT,
+    categoria ENUM('studio','lettura','gaming','personale','altro') DEFAULT 'studio',
+    priorita ENUM('bassa','media','alta','urgente') DEFAULT 'media',
+    completato BOOLEAN DEFAULT FALSE,
+    data_scadenza DATE,
+    data_creazione TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    data_completamento TIMESTAMP NULL,
+    FOREIGN KEY (user_id) REFERENCES utenti(id) ON DELETE CASCADE,
+    INDEX idx_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO utenti (username, email, password) VALUES 
-('admin', 'admin@mybackpack.it', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
-('user', 'user@mybackpack.it', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
-('demo', 'demo@mybackpack.it', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+-- EVENTI CALENDARIO
+CREATE TABLE eventi (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    titolo VARCHAR(200) NOT NULL,
+    descrizione TEXT,
+    tipo ENUM('verifica','compito','lezione','evento','promemoria','altro') DEFAULT 'evento',
+    data_evento DATE NOT NULL,
+    ora_inizio TIME,
+    ora_fine TIME,
+    materia VARCHAR(100),
+    colore VARCHAR(7) DEFAULT '#dc143c',
+    completato BOOLEAN DEFAULT FALSE,
+    data_creazione TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES utenti(id) ON DELETE CASCADE,
+    INDEX idx_user (user_id),
+    INDEX idx_data (data_evento)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ============================================
--- DATI DI ESEMPIO (user_id = 1 = admin)
--- ============================================
+-- UTENTI DI DEFAULT
+INSERT INTO utenti (username, email, password, tipologia) VALUES
+('admin', 'admin@mybackpack.it', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin'),
+('user', 'user@mybackpack.it', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user');
 
--- LIBRI
-INSERT INTO libri (user_id, titolo, autore, genere, stato, voto, preferito, prezzo) VALUES
-(1, 'Il Signore degli Anelli', 'J.R.R. Tolkien', 'Fantasy', 'completato', 5, 1, 25.90),
-(1, '1984', 'George Orwell', 'Distopico', 'completato', 5, 1, 15.00),
-(1, 'Harry Potter e la Pietra Filosofale', 'J.K. Rowling', 'Fantasy', 'in_lettura', 4, 1, 20.00),
-(1, 'Il Nome della Rosa', 'Umberto Eco', 'Giallo', 'da_leggere', NULL, 0, 18.50),
-(1, 'Orgoglio e Pregiudizio', 'Jane Austen', 'Romantico', 'da_leggere', NULL, 0, 12.00),
-(1, 'Il Piccolo Principe', 'Antoine de Saint-Exupéry', 'Favola', 'completato', 5, 1, 10.00),
-(1, 'Fahrenheit 451', 'Ray Bradbury', 'Fantascienza', 'in_lettura', 4, 0, 14.90),
-(1, 'La Divina Commedia', 'Dante Alighieri', 'Classico', 'da_leggere', NULL, 0, 22.00);
+-- DATI ESEMPIO LIBRI
+INSERT INTO libri (user_id, titolo, autore, genere, stato, voto, preferito, immagine) VALUES
+(1, 'Il Signore degli Anelli', 'J.R.R. Tolkien', 'Fantasy', 'completato', 5, 1, 'https://covers.openlibrary.org/b/id/8406786-L.jpg'),
+(1, '1984', 'George Orwell', 'Distopico', 'completato', 5, 1, 'https://covers.openlibrary.org/b/id/7222246-L.jpg'),
+(1, 'Harry Potter', 'J.K. Rowling', 'Fantasy', 'in_lettura', 4, 1, 'https://covers.openlibrary.org/b/id/10110415-L.jpg'),
+(1, 'Il Nome della Rosa', 'Umberto Eco', 'Giallo', 'da_leggere', NULL, 0, 'https://covers.openlibrary.org/b/id/8234196-L.jpg'),
+(1, 'Fahrenheit 451', 'Ray Bradbury', 'Fantascienza', 'in_lettura', 4, 0, 'https://covers.openlibrary.org/b/id/6735171-L.jpg'),
+(1, 'La Divina Commedia', 'Dante Alighieri', 'Classico', 'da_leggere', NULL, 0, 'https://covers.openlibrary.org/b/id/10387188-L.jpg');
 
--- MULTIMEDIA
-INSERT INTO multimedia (user_id, titolo, tipo, link, categoria, preferito) VALUES
-(1, 'Corso PHP Completo', 'video', 'https://www.youtube.com/watch?v=example1', 'Programmazione', 1),
-(1, 'Tutorial JavaScript', 'video', 'https://www.youtube.com/watch?v=example2', 'Programmazione', 1),
-(1, 'Playlist Musica Studio', 'audio', 'https://open.spotify.com/playlist/example', 'Musica', 0),
-(1, 'Podcast Filosofia', 'podcast', 'https://podcast.example.com', 'Educazione', 1),
-(1, 'Documentario Storia', 'video', 'https://www.youtube.com/watch?v=example3', 'Storia', 0),
-(1, 'Tutorial CSS', 'video', 'https://www.youtube.com/watch?v=example4', 'Programmazione', 1);
+-- DATI ESEMPIO GIOCHI
+INSERT INTO giochi (user_id, nome, piattaforma, genere, stato, voto, preferito, immagine) VALUES
+(1, 'The Last of Us Part II', 'PlayStation 5', 'Action', 'completato', 5, 1, 'https://image.api.playstation.com/vulcan/ap/rnd/202010/0222/niMUubpU9y1PnESfmQPVMKOh.png'),
+(1, 'Elden Ring', 'PC', 'RPG', 'in_corso', 5, 1, 'https://image.api.playstation.com/vulcan/ap/rnd/202110/2000/phvVT0qZfcRms5qDAk0SI3CM.png'),
+(1, 'God of War Ragnarok', 'PlayStation 5', 'Action', 'in_corso', 4, 1, 'https://image.api.playstation.com/vulcan/ap/rnd/202207/1210/4xJ8XB3bi888QTLZYdl7Oi0s.png'),
+(1, 'Minecraft', 'PC', 'Sandbox', 'in_corso', 4, 0, 'https://image.api.playstation.com/vulcan/img/cfn/11307uYG0CXzRuA9aryByTHYfRL3FZJVRFLV35iwKsBRAuEGMk.png'),
+(1, 'Cyberpunk 2077', 'Xbox', 'RPG', 'da_giocare', NULL, 0, 'https://image.api.playstation.com/vulcan/ap/rnd/202111/3013/cKZ4tKNFj9C00giTzYtH8PF1.png');
 
--- GIOCHI
-INSERT INTO giochi (user_id, nome, piattaforma, genere, stato, voto, preferito) VALUES
-(1, 'The Last of Us Part II', 'PlayStation 5', 'Action-Adventure', 'completato', 5, 1),
-(1, 'Elden Ring', 'PC', 'RPG', 'in_corso', 5, 1),
-(1, 'The Legend of Zelda: Breath of the Wild', 'Nintendo Switch', 'Action-Adventure', 'completato', 5, 1),
-(1, 'Cyberpunk 2077', 'Xbox Series X', 'RPG', 'da_giocare', NULL, 0),
-(1, 'God of War Ragnarök', 'PlayStation 5', 'Action', 'in_corso', 4, 1),
-(1, 'Red Dead Redemption 2', 'PC', 'Action-Adventure', 'completato', 5, 1),
-(1, 'Minecraft', 'PC', 'Sandbox', 'in_corso', 4, 0),
-(1, 'Stray', 'PlayStation 5', 'Adventure', 'da_giocare', NULL, 0);
+-- DATI ESEMPIO NOTE con scadenze
+INSERT INTO note (user_id, titolo, contenuto, colore, priorita, data_scadenza) VALUES
+(1, 'Verifica Matematica', 'Studiare integrali e derivate cap. 5-8', 'yellow', 'urgente', DATE_ADD(NOW(), INTERVAL 2 DAY)),
+(1, 'Progetto Informatica', 'Completare MyBackpack', 'orange', 'alta', DATE_ADD(NOW(), INTERVAL 5 DAY)),
+(1, 'Comprare Quaderni', 'Servono 3 quaderni a righe', 'green', 'bassa', DATE_ADD(NOW(), INTERVAL 10 DAY)),
+(1, 'Film da Vedere', 'Inception, Interstellar, Matrix', 'blue', 'media', NULL),
+(1, 'SCADENZA VICINA', 'Questa nota scade tra poco!', 'pink', 'urgente', DATE_ADD(NOW(), INTERVAL 1 DAY));
 
--- DOCUMENTI
-INSERT INTO documenti (user_id, titolo, tipo, descrizione, importante) VALUES
-(1, 'Appunti Matematica', 'PDF', 'Appunti completi del corso di matematica avanzata', 1),
-(1, 'Tesina Storia', 'Word', 'Bozza della tesina sulla Seconda Guerra Mondiale', 1),
-(1, 'Curriculum Vitae', 'PDF', 'CV aggiornato 2024', 1),
-(1, 'Ricette Preferite', 'Word', 'Raccolta di ricette personali', 0),
-(1, 'Lista Compiti', 'Excel', 'Elenco compiti e scadenze', 1),
-(1, 'Progetto Informatica', 'ZIP', 'Codice sorgente del progetto finale', 1);
+-- DATI ESEMPIO OBIETTIVI
+INSERT INTO obiettivi (user_id, titolo, descrizione, categoria, priorita, data_scadenza) VALUES
+(1, 'Leggere 5 libri', 'Obiettivo mensile di lettura', 'lettura', 'media', DATE_ADD(CURDATE(), INTERVAL 30 DAY)),
+(1, 'Studiare per la verifica', 'Capitoli 5-8 matematica', 'studio', 'urgente', DATE_ADD(CURDATE(), INTERVAL 3 DAY)),
+(1, 'Completare Elden Ring', 'Battere tutti i boss', 'gaming', 'bassa', NULL);
 
--- NOTE
-INSERT INTO note (user_id, titolo, contenuto, colore) VALUES
-(1, 'Ricorda!', 'Studiare per il compito di matematica di venerdì!', 'yellow'),
-(1, 'Progetto Scuola', 'Completare il progetto di informatica entro la prossima settimana', 'orange'),
-(1, 'Shopping', 'Comprare quaderni nuovi per la scuola', 'green'),
-(1, 'Idee Tesi', 'Possibili argomenti: AI, Blockchain, IoT', 'blue'),
-(1, 'Compleanno Marco', 'Il 15 del mese! Organizzare festa', 'pink'),
-(1, 'Film da Vedere', 'Inception, Interstellar, The Matrix', 'purple');
+-- DATI ESEMPIO EVENTI
+INSERT INTO eventi (user_id, titolo, tipo, data_evento, ora_inizio, ora_fine, materia, colore) VALUES
+(1, 'Verifica Matematica', 'verifica', DATE_ADD(CURDATE(), INTERVAL 3 DAY), '09:00', '10:00', 'Matematica', '#dc143c'),
+(1, 'Consegna Progetto', 'compito', DATE_ADD(CURDATE(), INTERVAL 7 DAY), '23:59', NULL, 'Informatica', '#ff4757'),
+(1, 'Interrogazione', 'verifica', DATE_ADD(CURDATE(), INTERVAL 5 DAY), '11:00', '12:00', 'Storia', '#1a1a1a');
 
--- ============================================
--- MESSAGGI FINALI
--- ============================================
-
-SELECT '✅ Database creato con successo!' AS STATUS;
-SELECT '' AS '';
-SELECT '🔐 CREDENZIALI DI ACCESSO:' AS INFO;
-SELECT '' AS '';
-SELECT 'Username: admin    | Password: password' AS ACCOUNT_1;
-SELECT 'Username: user     | Password: password' AS ACCOUNT_2;
-SELECT 'Username: demo     | Password: password' AS ACCOUNT_3;
-SELECT '' AS '';
-SELECT '📊 DATI CARICATI:' AS RIEPILOGO;
-SELECT '- 8 Libri di esempio' AS DATO_1;
-SELECT '- 6 Contenuti multimediali' AS DATO_2;
-SELECT '- 8 Videogiochi' AS DATO_3;
-SELECT '- 6 Documenti' AS DATO_4;
-SELECT '- 6 Note rapide' AS DATO_5;
+SELECT '✅ Database creato!' AS STATUS;
+SELECT 'Admin => admin / password' AS ACCOUNT_1;
+SELECT 'User  => user / password' AS ACCOUNT_2;
 
 /*credenziali: admin e password*/
