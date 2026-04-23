@@ -1,5 +1,6 @@
 /* ==================== VARIABILI ==================== */
 :root {
+<<<<<<< HEAD
     --primary: #dc143c;
     --primary-dark: #8b0000;
     --accent: #ff4757;
@@ -7,6 +8,22 @@
     --darker: #0a0a0a;
     --light-bg: #f5f5f5;
     --shadow: rgba(220,20,60,0.3);
+=======
+    --primary-color: #dc143c;     
+    --primary-dark: #8b0000;    
+    --secondary-color: #1a1a1a;
+    --secondary-light: #2d2d2d;  
+    --accent-color: #ff4757;     
+    --light-bg: #f5f5f5;          
+    --dark-bg: #0a0a0a;           
+    --text-light: #ffffff;
+    --text-dark: #333333;
+    --success-color: #dc143c;
+    --danger-color: #ff4757;
+    --warning-color: #ff6b6b;
+    --info-color: #dc143c;
+    --shadow: rgba(220, 20, 60, 0.3);
+>>>>>>> 2e859d5f6e6e5a1e22d6569cad7b886c3c31ccb2
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
