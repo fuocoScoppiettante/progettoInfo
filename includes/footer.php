@@ -12,7 +12,7 @@
                     <h5>MyBackpack</h5>
                 </div>
                 <p class="text-light">Il tuo zaino digitale per organizzare tutto.</p>
-                <p class="text-muted small">Progetto Scolastico 2026 - Istituto Tecnico</p>
+                <p class="text-muted small">Progetto Scolastico 2024 - Istituto Tecnico</p>
             </div>
             <div class="col-md-4 mb-4">
                 <h5 class="footer-title"><i class="fas fa-headset"></i> Assistenza</h5>
@@ -27,11 +27,13 @@
                 <div class="social-links">
                     <a href="https://www.instagram.com" target="_blank" class="btn btn-social"><i class="fab fa-instagram"></i></a>
                     <a href="https://www.facebook.com" target="_blank" class="btn btn-social"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://twitter.com" target="_blank" class="btn btn-social"><i class="fab fa-x-twitter"></i></a>
+                    <a href="https://www.youtube.com" target="_blank" class="btn btn-social"><i class="fab fa-youtube"></i></a>
                 </div>
             </div>
         </div>
         <hr class="my-4 border-danger">
-        <p class="text-center mb-0">&copy; 2026 MyBackpack - Tutti i diritti riservati</p>
+        <p class="text-center mb-0">&copy; 2024 MyBackpack - Tutti i diritti riservati</p>
     </div>
 </footer>
 <?php endif; ?>

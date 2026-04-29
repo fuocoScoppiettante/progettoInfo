@@ -156,3 +156,5 @@ INSERT INTO eventi (user_id, titolo, tipo, data_evento, ora_inizio, ora_fine, ma
 SELECT '✅ Database creato!' AS STATUS;
 SELECT 'Admin => admin / password' AS ACCOUNT_1;
 SELECT 'User  => user / password' AS ACCOUNT_2;
+
+/*credenziali: admin e password*/

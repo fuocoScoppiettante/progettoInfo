@@ -6,7 +6,7 @@ $db = getDB();
 $user_id = $_SESSION['user_id'];
 $tipologia = getTipologia();
 
-// Statistiche
+// Statistiche rapide (SENZA DOCUMENTI)
 $stmt = $db->prepare("SELECT COUNT(*) as totale FROM libri WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $totale_libri = $stmt->fetch()['totale'];
@@ -27,6 +27,7 @@ $stmt = $db->prepare("SELECT COUNT(*) as totale FROM obiettivi WHERE user_id = ?
 $stmt->execute([$user_id]);
 $totale_obiettivi = $stmt->fetch()['totale'];
 
+// Completati
 $stmt = $db->prepare("SELECT COUNT(*) as completati FROM libri WHERE user_id = ? AND stato = 'completato'");
 $stmt->execute([$user_id]);
 $libri_completati = $stmt->fetch()['completati'];
@@ -35,17 +36,10 @@ $stmt = $db->prepare("SELECT COUNT(*) as completati FROM giochi WHERE user_id = 
 $stmt->execute([$user_id]);
 $giochi_completati = $stmt->fetch()['completati'];
 
-// Note in scadenza
+// Note in scadenza (per popup)
 $stmt = $db->prepare("SELECT * FROM note WHERE user_id = ? AND data_scadenza IS NOT NULL AND data_scadenza BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 2 DAY) AND completata = 0");
 $stmt->execute([$user_id]);
 $note_scadenza = $stmt->fetchAll();
-
-// Preferiti
-$stmt = $db->prepare("SELECT 
-    (SELECT COUNT(*) FROM libri WHERE user_id = ? AND preferito = 1) +
-    (SELECT COUNT(*) FROM giochi WHERE user_id = ? AND preferito = 1) as tot");
-$stmt->execute([$user_id, $user_id]);
-$preferiti = $stmt->fetch()['tot'];
 ?>
 
 <!-- POPUP SCADENZA NOTE -->
@@ -67,7 +61,9 @@ $preferiti = $stmt->fetch()['tot'];
                     $ore_rimaste = ($diff->days * 24) + $diff->h;
                     ?>
                     <div class="scadenza-item">
-                        <div class="scadenza-icon"><i class="fas fa-bell"></i></div>
+                        <div class="scadenza-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
                         <div class="scadenza-info">
                             <h6><?php echo htmlspecialchars($ns['titolo'] ?: 'Nota senza titolo'); ?></h6>
                             <p class="mb-0">
@@ -96,194 +92,205 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 <?php endif; ?>
 
-<!-- ==================== HEADER ==================== -->
-<div class="dash-header">
+<!-- Header Dashboard -->
+<div class="dashboard-header mb-5">
     <div class="row align-items-center">
-        <div class="col-md-7">
-            <h1 class="dash-title">
-                <span class="dash-title-red">Dashboard</span>
+        <div class="col-md-8">
+            <h1 class="display-4 fw-bold mb-2">
+                <i class="fas fa-tachometer-alt text-danger"></i> 
+                <span class="dashboard-title">Dashboard</span>
             </h1>
-            <p class="dash-welcome">
-                Bentornato, <strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong>
-                <span class="badge bg-<?php echo $tipologia == 'admin' ? 'danger' : 'secondary'; ?> ms-2"><?php echo strtoupper($tipologia); ?></span>
+            <p class="lead text-muted mb-0">
+                <i class="fas fa-user-circle"></i> Benvenuto, <strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong>!
+                <span class="badge bg-<?php echo $tipologia == 'admin' ? 'danger' : 'secondary'; ?> ms-2">
+                    <?php echo strtoupper($tipologia); ?>
+                </span>
+            </p>
+            <p class="text-muted">
+                <i class="fas fa-calendar-alt"></i> <?php echo date('d/m/Y'); ?>
             </p>
         </div>
-        <div class="col-md-5">
-            <!-- AZIONI RAPIDE - Pulsanti compatti -->
-            <div class="quick-buttons">
-                <span class="quick-label"><i class="fas fa-bolt"></i> Aggiungi:</span>
-                <a href="libri.php#form-libro" class="qbtn qbtn-libro" title="Aggiungi Libro">
-                    <i class="fas fa-book"></i>
-                </a>
-                <a href="giochi.php#form-gioco" class="qbtn qbtn-gioco" title="Aggiungi Gioco">
-                    <i class="fas fa-gamepad"></i>
-                </a>
-                <a href="multimedia.php#form-multimedia" class="qbtn qbtn-media" title="Aggiungi Multimedia">
-                    <i class="fas fa-photo-video"></i>
-                </a>
-                <a href="note.php#form-nota" class="qbtn qbtn-nota" title="Nuova Nota">
-                    <i class="fas fa-sticky-note"></i>
-                </a>
-                <a href="statistiche.php" class="qbtn qbtn-stat" title="Statistiche">
-                    <i class="fas fa-chart-bar"></i>
-                </a>
+        <div class="col-md-4 text-end">
+            <div class="stat-badge">
+                <i class="fas fa-check-circle"></i>
+                <span><?php echo $libri_completati + $giochi_completati; ?> Completati</span>
             </div>
         </div>
     </div>
 </div>
 
-<!-- ==================== MINI STATS ==================== -->
-<div class="row g-3 mb-5">
-    <div class="col-md-3 col-6">
-        <div class="mini-stat">
-            <div class="mini-stat-icon-dash"><i class="fas fa-layer-group"></i></div>
-            <div>
-                <h3><?php echo $totale_libri + $totale_giochi + $totale_multimedia; ?></h3>
-                <p>Elementi</p>
+<!-- Cards con Immagini -->
+<div class="row g-4 mb-5">
+    <!-- Card Libri -->
+    <div class="col-lg-4 col-md-6">
+        <div class="stat-card-premium">
+            <div class="card-image-overlay">
+                <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=800&q=80" alt="Libri" class="card-bg-image">
+                <div class="card-gradient" style="background: linear-gradient(135deg, rgba(139,0,0,0.85), rgba(220,20,60,0.9));"></div>
+            </div>
+            <div class="card-content">
+                <div class="card-icon"><i class="fas fa-book"></i></div>
+                <h3 class="card-title">Libri</h3>
+                <div class="card-number"><?php echo $totale_libri; ?></div>
+                <p class="card-subtitle"><?php echo $libri_completati; ?> completati</p>
+                <a href="libri.php" class="btn-card-action"><span>Visualizza</span> <i class="fas fa-arrow-right"></i></a>
             </div>
         </div>
     </div>
-    <div class="col-md-3 col-6">
-        <div class="mini-stat">
-            <div class="mini-stat-icon-dash" style="background: linear-gradient(135deg, #28a745, #20c997);"><i class="fas fa-trophy"></i></div>
-            <div>
-                <h3><?php echo $libri_completati + $giochi_completati; ?></h3>
+
+    <!-- Card Multimedia -->
+    <div class="col-lg-4 col-md-6">
+        <div class="stat-card-premium">
+            <div class="card-image-overlay">
+                <img src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&q=80" alt="Multimedia" class="card-bg-image">
+                <div class="card-gradient" style="background: linear-gradient(135deg, rgba(102,51,153,0.85), rgba(220,20,60,0.9));"></div>
+            </div>
+            <div class="card-content">
+                <div class="card-icon"><i class="fas fa-photo-video"></i></div>
+                <h3 class="card-title">Multimedia</h3>
+                <div class="card-number"><?php echo $totale_multimedia; ?></div>
+                <p class="card-subtitle">Contenuti salvati</p>
+                <a href="multimedia.php" class="btn-card-action"><span>Visualizza</span> <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Giochi -->
+    <div class="col-lg-4 col-md-6">
+        <div class="stat-card-premium">
+            <div class="card-image-overlay">
+                <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&q=80" alt="Gaming" class="card-bg-image">
+                <div class="card-gradient" style="background: linear-gradient(135deg, rgba(26,26,26,0.9), rgba(220,20,60,0.85));"></div>
+            </div>
+            <div class="card-content">
+                <div class="card-icon"><i class="fas fa-gamepad"></i></div>
+                <h3 class="card-title">Giochi</h3>
+                <div class="card-number"><?php echo $totale_giochi; ?></div>
+                <p class="card-subtitle"><?php echo $giochi_completati; ?> completati</p>
+                <a href="giochi.php" class="btn-card-action"><span>Visualizza</span> <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Note -->
+    <div class="col-lg-6 col-md-6">
+        <div class="stat-card-premium">
+            <div class="card-image-overlay">
+                <img src="https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&q=80" alt="Note" class="card-bg-image">
+                <div class="card-gradient" style="background: linear-gradient(135deg, rgba(220,20,60,0.85), rgba(255,107,107,0.9));"></div>
+            </div>
+            <div class="card-content">
+                <div class="card-icon"><i class="fas fa-sticky-note"></i></div>
+                <h3 class="card-title">Note</h3>
+                <div class="card-number"><?php echo $totale_note; ?></div>
+                <p class="card-subtitle">Appunti e promemoria</p>
+                <a href="note.php" class="btn-card-action"><span>Visualizza</span> <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Obiettivi -->
+    <div class="col-lg-6 col-md-6">
+        <div class="stat-card-premium">
+            <div class="card-image-overlay">
+                <img src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=800&q=80" alt="Obiettivi" class="card-bg-image">
+                <div class="card-gradient" style="background: linear-gradient(135deg, rgba(26,26,26,0.85), rgba(255,71,87,0.9));"></div>
+            </div>
+            <div class="card-content">
+                <div class="card-icon"><i class="fas fa-bullseye"></i></div>
+                <h3 class="card-title">Obiettivi</h3>
+                <div class="card-number"><?php echo $totale_obiettivi; ?></div>
+                <p class="card-subtitle">Traguardi da raggiungere</p>
+                <a href="obiettivi.php" class="btn-card-action"><span>Visualizza</span> <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mini Statistiche -->
+<div class="row mb-5">
+    <div class="col-md-3 col-6 mb-3">
+        <div class="mini-stat-card">
+            <div class="mini-stat-icon bg-danger"><i class="fas fa-layer-group"></i></div>
+            <div class="mini-stat-info">
+                <h4><?php echo $totale_libri + $totale_giochi + $totale_multimedia; ?></h4>
+                <p>Totale Elementi</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="mini-stat-card">
+            <div class="mini-stat-icon bg-success"><i class="fas fa-trophy"></i></div>
+            <div class="mini-stat-info">
+                <h4><?php echo $libri_completati + $giochi_completati; ?></h4>
                 <p>Completati</p>
             </div>
         </div>
     </div>
-    <div class="col-md-3 col-6">
-        <div class="mini-stat">
-            <div class="mini-stat-icon-dash" style="background: linear-gradient(135deg, #ffc107, #ff9800);"><i class="fas fa-star"></i></div>
-            <div>
-                <h3><?php echo $preferiti; ?></h3>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="mini-stat-card">
+            <div class="mini-stat-icon bg-warning"><i class="fas fa-star"></i></div>
+            <div class="mini-stat-info">
+                <?php
+                $stmt = $db->prepare("SELECT 
+                    (SELECT COUNT(*) FROM libri WHERE user_id = ? AND preferito = 1) +
+                    (SELECT COUNT(*) FROM giochi WHERE user_id = ? AND preferito = 1) as tot");
+                $stmt->execute([$user_id, $user_id]);
+                $preferiti = $stmt->fetch()['tot'];
+                ?>
+                <h4><?php echo $preferiti; ?></h4>
                 <p>Preferiti</p>
             </div>
         </div>
     </div>
-    <div class="col-md-3 col-6">
-        <div class="mini-stat">
-            <div class="mini-stat-icon-dash" style="background: linear-gradient(135deg, #6c757d, #495057);"><i class="fas fa-sticky-note"></i></div>
-            <div>
-                <h3><?php echo $totale_note; ?></h3>
-                <p>Note</p>
+    <div class="col-md-3 col-6 mb-3">
+        <div class="mini-stat-card">
+            <div class="mini-stat-icon bg-info"><i class="fas fa-sticky-note"></i></div>
+            <div class="mini-stat-info">
+                <h4><?php echo $totale_note; ?></h4>
+                <p>Note Attive</p>
             </div>
         </div>
     </div>
 </div>
 
-<!-- ==================== CARD LIBRI ==================== -->
-<div class="dash-section-card mb-5">
-    <div class="dash-card-bg">
-        <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1200&q=80" alt="Biblioteca">
-        <div class="dash-card-gradient dash-gradient-libri"></div>
+<!-- Azioni Rapide -->
+<div class="card card-premium">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-bolt"></i> Azioni Rapide</h5>
     </div>
-    <div class="dash-card-content">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <div class="dash-card-icon"><i class="fas fa-book"></i></div>
-                <h2 class="dash-card-title">La Mia Libreria</h2>
-                <p class="dash-card-desc">Organizza i tuoi libri, segna quelli letti e scopri nuovi titoli</p>
-                <div class="dash-card-stats">
-                    <span><strong><?php echo $totale_libri; ?></strong> totali</span>
-                    <span class="dash-card-divider">|</span>
-                    <span><strong><?php echo $libri_completati; ?></strong> letti</span>
-                    <span class="dash-card-divider">|</span>
-                    <span><strong><?php echo $libri_preferiti; ?></strong> <i class="fas fa-heart text-danger"></i></span>
-                </div>
-            </div>
-            <div class="col-md-4 text-end">
-                <div class="dash-card-number"><?php echo $totale_libri; ?></div>
-                <a href="libri.php" class="btn-dash-action">
-                    Vai alla Libreria <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ==================== CARD MULTIMEDIA ==================== -->
-<div class="dash-section-card mb-5">
-    <div class="dash-card-bg">
-        <img src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=1200&q=80" alt="Multimedia">
-        <div class="dash-card-gradient dash-gradient-multimedia"></div>
-    </div>
-    <div class="dash-card-content">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <div class="dash-card-icon"><i class="fas fa-photo-video"></i></div>
-                <h2 class="dash-card-title">Contenuti Multimediali</h2>
-                <p class="dash-card-desc">Video, audio, podcast e contenuti utili per lo studio e il tempo libero</p>
-                <div class="dash-card-stats">
-                    <span><strong><?php echo $totale_multimedia; ?></strong> contenuti salvati</span>
-                </div>
-            </div>
-            <div class="col-md-4 text-end">
-                <div class="dash-card-number"><?php echo $totale_multimedia; ?></div>
-                <a href="multimedia.php" class="btn-dash-action">
-                    Vai ai Multimedia <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ==================== CARD GIOCHI ==================== -->
-<div class="dash-section-card mb-5">
-    <div class="dash-card-bg">
-        <img src="https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1200&q=80" alt="Gaming">
-        <div class="dash-card-gradient dash-gradient-giochi"></div>
-    </div>
-    <div class="dash-card-content">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <div class="dash-card-icon"><i class="fas fa-gamepad"></i></div>
-                <h2 class="dash-card-title">La Mia Collezione Giochi</h2>
-                <p class="dash-card-desc">Tieni traccia dei giochi completati, in corso e della tua wishlist</p>
-                <div class="dash-card-stats">
-                    <span><strong><?php echo $totale_giochi; ?></strong> totali</span>
-                    <span class="dash-card-divider">|</span>
-                    <span><strong><?php echo $giochi_completati; ?></strong> completati</span>
-                    <span class="dash-card-divider">|</span>
-                    <span><strong><?php echo $giochi_preferiti; ?></strong> <i class="fas fa-heart text-danger"></i></span>
-                </div>
-            </div>
-            <div class="col-md-4 text-end">
-                <div class="dash-card-number"><?php echo $totale_giochi; ?></div>
-                <a href="giochi.php" class="btn-dash-action">
-                    Vai ai Giochi <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ==================== CARD NOTE ==================== -->
-<div class="dash-section-card mb-5">
-    <div class="dash-card-bg">
-        <img src="https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=1200&q=80" alt="Note">
-        <div class="dash-card-gradient dash-gradient-note"></div>
-    </div>
-    <div class="dash-card-content">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <div class="dash-card-icon"><i class="fas fa-sticky-note"></i></div>
-                <h2 class="dash-card-title">Note & Promemoria</h2>
-                <p class="dash-card-desc">Appunti veloci, promemoria con scadenza e organizzazione delle idee</p>
-                <div class="dash-card-stats">
-                    <span><strong><?php echo $totale_note; ?></strong> note</span>
-                    <?php if(count($note_scadenza) > 0): ?>
-                        <span class="dash-card-divider">|</span>
-                        <span class="text-warning"><strong><?php echo count($note_scadenza); ?></strong> ⚠️ in scadenza</span>
-                    <?php endif; ?>
-                </div>
-            </div>
-            <div class="col-md-4 text-end">
-                <div class="dash-card-number"><?php echo $totale_note; ?></div>
-                <a href="note.php" class="btn-dash-action">
-                    Vai alle Note <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
+    <div class="card-body">
+        <div class="quick-action-grid">
+            <a href="libri.php" class="quick-action-box">
+                <div class="qa-icon-large bg-danger"><i class="fas fa-book"></i></div>
+                <h6>Libri</h6>
+                <p>Gestisci la libreria</p>
+            </a>
+            <a href="giochi.php" class="quick-action-box">
+                <div class="qa-icon-large bg-dark"><i class="fas fa-gamepad"></i></div>
+                <h6>Giochi</h6>
+                <p>I tuoi videogiochi</p>
+            </a>
+            <a href="multimedia.php" class="quick-action-box">
+                <div class="qa-icon-large bg-success"><i class="fas fa-photo-video"></i></div>
+                <h6>Multimedia</h6>
+                <p>Contenuti salvati</p>
+            </a>
+            <a href="note.php" class="quick-action-box">
+                <div class="qa-icon-large bg-warning"><i class="fas fa-sticky-note"></i></div>
+                <h6>Note</h6>
+                <p>Appunti e promemoria</p>
+            </a>
+            <a href="calendario.php" class="quick-action-box">
+                <div class="qa-icon-large bg-info"><i class="fas fa-calendar-alt"></i></div>
+                <h6>Calendario</h6>
+                <p>I tuoi eventi</p>
+            </a>
+            <a href="statistiche.php" class="quick-action-box">
+                <div class="qa-icon-large bg-dark"><i class="fas fa-chart-bar"></i></div>
+                <h6>Statistiche</h6>
+                <p>Analisi progressi</p>
+            </a>
         </div>
     </div>
 </div>

@@ -8,6 +8,7 @@ function checkLogin() {
     }
 }
 
+// Funzione per ottenere la tipologia utente
 function getTipologia() {
     if (!isset($_SESSION['user_id'])) return 'user';
     
@@ -37,10 +38,17 @@ $tipologia = getTipologia();
 <?php if(isset($_SESSION['user_id'])): ?>
 <nav class="navbar navbar-expand-lg navbar-custom">
     <div class="container-fluid">
-        
-        <!-- Logo al centro - SOLO TESTO, senza scudo -->
+        <!-- Logo al centro -->
         <a class="navbar-brand mx-auto order-lg-1" href="dashboard.php">
-            <span class="logo-main">MY</span><span class="logo-accent">BACKPACK</span>
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="logo-text">
+                    <span class="logo-main">MB</span>
+                    <span class="logo-sub">BACKPACK</span>
+                </div>
+            </div>
         </a>
         
         <button class="navbar-toggler order-lg-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -48,8 +56,7 @@ $tipologia = getTipologia();
         </button>
         
         <div class="collapse navbar-collapse order-lg-0" id="navbarNav">
-            
-            <!-- Links Sinistra: Dashboard, Libri, Multimedia, Giochi, Note -->
+            <!-- Links Sinistra -->
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
                     <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : ''; ?>" href="dashboard.php">
@@ -71,21 +78,26 @@ $tipologia = getTipologia();
                         <i class="fas fa-gamepad"></i> Giochi
                     </a>
                 </li>
+            </ul>
+            
+            <!-- Links Destra -->
+            <ul class="navbar-nav ms-auto order-lg-2">
                 <li class="nav-item">
                     <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'note.php' ? 'active' : ''; ?>" href="note.php">
                         <i class="fas fa-sticky-note"></i> Note
                     </a>
                 </li>
-            </ul>
-            
-            <!-- Links Destra: Statistiche, Utente, Logout -->
-            <ul class="navbar-nav ms-auto order-lg-2">
+                <li class="nav-item">
+                    <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'calendario.php' ? 'active' : ''; ?>" href="calendario.php">
+                        <i class="fas fa-calendar-alt"></i> Calendario
+                    </a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'statistiche.php' ? 'active' : ''; ?>" href="statistiche.php">
                         <i class="fas fa-chart-bar"></i> Statistiche
                     </a>
                 </li>
-                <li class="nav-item d-flex align-items-center">
+                <li class="nav-item">
                     <span class="navbar-text user-badge">
                         <i class="fas fa-user-circle"></i> 
                         <?php echo htmlspecialchars($_SESSION['username']); ?>
@@ -95,7 +107,7 @@ $tipologia = getTipologia();
                     </span>
                 </li>
                 <li class="nav-item">
-                    <a class="btn btn-logout" href="logout.php" title="Esci">
+                    <a class="btn btn-logout" href="logout.php">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </li>
